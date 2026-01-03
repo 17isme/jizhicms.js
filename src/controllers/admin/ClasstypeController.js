@@ -13,14 +13,34 @@ class ClasstypeController {
       // 构建树形结构
       const tree = buildTree(classtypes.map(item => item.toJSON()));
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          list: classtypes,
-          tree
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            list: classtypes,
+            tree
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '栏目管理 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/classtype-list', {
+            classtypes: tree,
+            query: req.query
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Classtype list error:', error);
@@ -40,13 +60,35 @@ class ClasstypeController {
         order: [['orders', 'ASC'], ['id', 'ASC']]
       });
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          parentClasstypes
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            parentClasstypes
+          }
+        }));
+      }
+
+      const pid = formatParam(req.query.pid, 1, 0);
+
+      res.render('layouts/admin', {
+        title: '添加栏目 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/classtype-add', {
+            parentClasstypes,
+            pid
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
     } catch (error) {
       console.error('Classtype add error:', error);
       res.json(JsonReturn({
@@ -156,14 +198,34 @@ class ClasstypeController {
         order: [['orders', 'ASC'], ['id', 'ASC']]
       });
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          classtype,
-          parentClasstypes
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            classtype,
+            parentClasstypes
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '编辑栏目 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/classtype-edit', {
+            classtype,
+            parentClasstypes
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Classtype edit error:', error);
