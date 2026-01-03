@@ -1,0 +1,324 @@
+<% 
+// 设置页面变量
+const pageTitle = '栏目管理';
+const pageIcon = 'fas fa-folder';
+const pageDescription = '管理网站栏目分类';
+const breadcrumb = [
+    { name: '内容管理', url: '#' },
+    { name: '栏目管理', url: '/admin/classtype/list' }
+];
+%>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="toolbar-left">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control search-input" placeholder="搜索栏目名称..." 
+                   value="<%= query.keyword || '' %>" name="keyword">
+        </div>
+    </div>
+    
+    <div class="toolbar-right">
+        <div class="batch-actions" style="display: none;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="batchDelete('/admin/classtype/delete')">
+                <i class="fas fa-trash"></i> 删除选中 (<span class="selected-count">0</span>)
+            </button>
+        </div>
+        
+        <button type="button" class="btn btn-secondary me-2" onclick="expandAll()">
+            <i class="fas fa-expand-arrows-alt"></i> 展开全部
+        </button>
+        
+        <button type="button" class="btn btn-secondary me-2" onclick="collapseAll()">
+            <i class="fas fa-compress-arrows-alt"></i> 折叠全部
+        </button>
+        
+        <a href="/admin/classtype/add" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 新建栏目
+        </a>
+    </div>
+</div>
+
+<!-- 栏目列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover tree-table">
+                <thead>
+                    <tr>
+                        <th width="50">
+                            <input type="checkbox" class="form-check-input select-all">
+                        </th>
+                        <th>栏目名称</th>
+                        <th width="120">栏目标识</th>
+                        <th width="100">模型</th>
+                        <th width="80">排序</th>
+                        <th width="80">状态</th>
+                        <th width="180">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="classtypeList">
+                    <% if (typeof classtypes !== 'undefined' && classtypes.length > 0) { %>
+                        <% function renderClasstype(classtypes, level = 0) { %>
+                            <% classtypes.forEach(function(classtype) { %>
+                                <tr class="tree-node" data-id="<%= classtype.id %>" data-pid="<%= classtype.pid %>" data-level="<%= level %>">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input select-item" value="<%= classtype.id %>">
+                                    </td>
+                                    <td>
+                                        <div class="tree-title" style="padding-left: <%= level * 20 %>px;">
+                                            <% if (classtype.children && classtype.children.length > 0) { %>
+                                                <i class="fas fa-caret-down tree-toggle me-1" onclick="toggleNode(<%= classtype.id %>)"></i>
+                                            <% } else { %>
+                                                <i class="tree-spacer me-1" style="width: 12px; display: inline-block;"></i>
+                                            <% } %>
+                                            
+                                            <% if (classtype.litpic) { %>
+                                                <img src="<%= classtype.litpic %>" alt="栏目图片" class="me-2" 
+                                                     style="width: 24px; height: 24px; object-fit: cover; border-radius: 4px;">
+                                            <% } else { %>
+                                                <i class="fas fa-folder text-warning me-2"></i>
+                                            <% } %>
+                                            
+                                            <a href="/admin/classtype/edit/<%= classtype.id %>" class="text-decoration-none fw-bold">
+                                                <%= classtype.title %>
+                                            </a>
+                                            
+                                            <% if (classtype.target) { %>
+                                                <i class="fas fa-external-link-alt text-info ms-1" title="外部链接"></i>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code class="text-muted"><%= classtype.biaoshi || '-' %></code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary"><%= classtype.molds || 'article' %></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info"><%= classtype.orders || 0 %></span>
+                                    </td>
+                                    <td>
+                                        <% if (classtype.isshow) { %>
+                                            <span class="badge bg-success">显示</span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">隐藏</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-actions">
+                                            <a href="/list/<%= classtype.id %>" target="_blank" 
+                                               class="btn btn-outline-info btn-sm" title="预览">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="/admin/classtype/add?pid=<%= classtype.id %>" 
+                                               class="btn btn-outline-success btn-sm" title="添加子栏目">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                            <a href="/admin/classtype/edit/<%= classtype.id %>" 
+                                               class="btn btn-outline-primary btn-sm" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="deleteClasstype(<%= classtype.id %>)" title="删除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <% if (classtype.children && classtype.children.length > 0) { %>
+                                    <% renderClasstype(classtype.children, level + 1); %>
+                                <% } %>
+                            <% }); %>
+                        <% } %>
+                        
+                        <% renderClasstype(tree || classtypes); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="fas fa-folder fa-3x mb-3 text-muted"></i>
+                                <div>暂无栏目数据</div>
+                                <a href="/admin/classtype/add" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus"></i> 创建第一个栏目
+                                </a>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.tree-table .tree-node.collapsed {
+    display: none;
+}
+
+.tree-toggle {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.tree-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.tree-title {
+    display: flex;
+    align-items: center;
+}
+
+.btn-group-actions .btn {
+    margin-right: 2px;
+}
+</style>
+
+<script>
+// 展开/折叠节点
+function toggleNode(nodeId) {
+    const $node = $(`tr[data-id="${nodeId}"]`);
+    const $toggle = $node.find('.tree-toggle');
+    const $children = $(`tr[data-pid="${nodeId}"]`);
+    
+    if ($toggle.hasClass('collapsed')) {
+        // 展开
+        $toggle.removeClass('collapsed');
+        $children.removeClass('collapsed').show();
+        
+        // 递归展开子节点
+        $children.each(function() {
+            const childId = $(this).data('id');
+            const $childToggle = $(this).find('.tree-toggle');
+            if (!$childToggle.hasClass('collapsed')) {
+                showDescendants(childId);
+            }
+        });
+    } else {
+        // 折叠
+        $toggle.addClass('collapsed');
+        hideDescendants(nodeId);
+    }
+}
+
+// 隐藏后代节点
+function hideDescendants(nodeId) {
+    const $children = $(`tr[data-pid="${nodeId}"]`);
+    $children.each(function() {
+        const childId = $(this).data('id');
+        $(this).addClass('collapsed').hide();
+        hideDescendants(childId);
+    });
+}
+
+// 显示后代节点
+function showDescendants(nodeId) {
+    const $children = $(`tr[data-pid="${nodeId}"]`);
+    $children.each(function() {
+        const childId = $(this).data('id');
+        const $childToggle = $(this).find('.tree-toggle');
+        $(this).removeClass('collapsed').show();
+        
+        if (!$childToggle.hasClass('collapsed')) {
+            showDescendants(childId);
+        }
+    });
+}
+
+// 展开全部
+function expandAll() {
+    $('.tree-toggle').removeClass('collapsed');
+    $('.tree-node').removeClass('collapsed').show();
+}
+
+// 折叠全部
+function collapseAll() {
+    $('.tree-toggle').addClass('collapsed');
+    $('tr[data-pid!="0"]').addClass('collapsed').hide();
+}
+
+// 搜索功能
+$('.search-input').on('input', debounce(function() {
+    const keyword = $(this).val().toLowerCase();
+    
+    if (keyword) {
+        // 搜索模式：显示匹配的节点及其父节点
+        $('.tree-node').each(function() {
+            const title = $(this).find('.tree-title a').text().toLowerCase();
+            const $node = $(this);
+            
+            if (title.includes(keyword)) {
+                $node.show().removeClass('collapsed');
+                
+                // 显示所有父节点
+                let pid = $node.data('pid');
+                while (pid && pid !== 0) {
+                    const $parent = $(`tr[data-id="${pid}"]`);
+                    $parent.show().removeClass('collapsed');
+                    $parent.find('.tree-toggle').removeClass('collapsed');
+                    pid = $parent.data('pid');
+                }
+            } else {
+                $node.hide().addClass('collapsed');
+            }
+        });
+    } else {
+        // 重置显示
+        $('.tree-node').removeClass('collapsed').show();
+        $('.tree-toggle').removeClass('collapsed');
+        collapseAll();
+    }
+}, 300));
+
+// 删除单个栏目
+function deleteClasstype(id) {
+    if (!confirm('确定要删除这个栏目吗？删除后其子栏目也将被删除！')) {
+        return;
+    }
+    
+    admin.showLoading('删除中...');
+    
+    $.ajax({
+        url: '/admin/classtype/delete',
+        method: 'POST',
+        data: { ids: [id] },
+        success: function(response) {
+            admin.hideLoading();
+            if (response.code === 0) {
+                admin.showSuccess('删除成功');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                admin.showError(response.msg || '删除失败');
+            }
+        },
+        error: function() {
+            admin.hideLoading();
+            admin.showError('删除失败，请稍后重试');
+        }
+    });
+}
+
+// 防抖函数
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// 页面加载完成后，默认折叠所有子节点
+$(document).ready(function() {
+    // 初始化时折叠二级以下节点
+    $('tr[data-level]:not([data-level="0"]):not([data-level="1"])').addClass('collapsed').hide();
+    $('tr[data-level="1"] .tree-toggle').addClass('collapsed');
+});
+</script>

@@ -1,0 +1,325 @@
+<% 
+// 设置页面变量
+const pageTitle = '控制台';
+const pageIcon = 'fas fa-tachometer-alt';
+const pageDescription = '欢迎使用极致CMS管理后台';
+const breadcrumb = [];
+%>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card position-relative">
+            <div class="stats-number" id="articleCount">-</div>
+            <div class="stats-label">文章总数</div>
+            <i class="fas fa-file-alt stats-icon"></i>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card position-relative" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+            <div class="stats-number" id="classtypeCount">-</div>
+            <div class="stats-label">栏目数量</div>
+            <i class="fas fa-folder stats-icon"></i>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card position-relative" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+            <div class="stats-number" id="memberCount">-</div>
+            <div class="stats-label">会员数量</div>
+            <i class="fas fa-users stats-icon"></i>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card position-relative" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
+            <div class="stats-number" id="adminCount">-</div>
+            <div class="stats-label">管理员数量</div>
+            <i class="fas fa-user-shield stats-icon"></i>
+        </div>
+    </div>
+</div>
+
+<!-- 主要内容区域 -->
+<div class="row">
+    <!-- 最新文章 -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-alt text-primary"></i> 最新文章</h5>
+                <a href="/admin/article/list" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-list"></i> 查看全部
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>栏目</th>
+                                <th>点击量</th>
+                                <th>发布时间</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="latestArticles">
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    加载中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 侧边栏信息 -->
+    <div class="col-lg-4">
+        <!-- 快速操作 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt text-warning"></i> 快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/admin/article/add" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> 发布文章
+                    </a>
+                    <a href="/admin/classtype/add" class="btn btn-outline-success">
+                        <i class="fas fa-folder-plus"></i> 新建栏目
+                    </a>
+                    <a href="/admin/admin/add" class="btn btn-outline-info">
+                        <i class="fas fa-user-plus"></i> 添加管理员
+                    </a>
+                    <a href="/admin/sys/config" class="btn btn-outline-warning">
+                        <i class="fas fa-cog"></i> 系统设置
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 系统信息 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle text-info"></i> 系统信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="system-info" id="systemInfo">
+                    <div class="info-item">
+                        <strong>Node.js版本：</strong>
+                        <span id="nodejsVersion">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>系统平台：</strong>
+                        <span id="platform">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>运行时间：</strong>
+                        <span id="uptime">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>内存使用：</strong>
+                        <span id="memory">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最近登录 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock text-success"></i> 登录信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="login-info">
+                    <div class="info-item">
+                        <strong>当前用户：</strong>
+                        <span><%= user.name || user.username %></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>用户组：</strong>
+                        <span><%= user.groupname || '默认组' %></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>登录次数：</strong>
+                        <span id="loginNum">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>上次登录：</strong>
+                        <span id="lastLogin">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.stats-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    opacity: 0.3;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+.badge-status {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // 加载统计数据和系统信息
+    loadDashboardData();
+    
+    // 每30秒更新一次数据
+    setInterval(loadDashboardData, 30000);
+});
+
+function loadDashboardData() {
+    $.ajax({
+        url: '/admin/main',
+        method: 'GET',
+        success: function(response) {
+            if (response.code === 0) {
+                const data = response.data;
+                
+                // 更新统计数字
+                $('#articleCount').text(data.articleCount || 0);
+                $('#classtypeCount').text(data.classtypeCount || 0);
+                $('#memberCount').text(data.memberCount || 0);
+                $('#adminCount').text(data.adminCount || 0);
+                
+                // 更新最新文章列表
+                updateLatestArticles(data.latestArticles || []);
+                
+                // 更新系统信息
+                if (data.systemInfo) {
+                    $('#nodejsVersion').text(data.systemInfo.nodejs || '-');
+                    $('#platform').text(data.systemInfo.platform || '-');
+                    $('#uptime').text(formatUptime(data.systemInfo.uptime || 0));
+                    
+                    if (data.systemInfo.memory) {
+                        const memUsed = Math.round(data.systemInfo.memory.heapUsed / 1024 / 1024);
+                        const memTotal = Math.round(data.systemInfo.memory.heapTotal / 1024 / 1024);
+                        $('#memory').text(`${memUsed}MB / ${memTotal}MB`);
+                    }
+                }
+            }
+        },
+        error: function() {
+            console.error('Failed to load dashboard data');
+        }
+    });
+    
+    // 加载用户信息
+    $.ajax({
+        url: '/admin/api/admin/info',
+        method: 'GET',
+        success: function(response) {
+            if (response.code === 0) {
+                const admin = response.data;
+                $('#loginNum').text(admin.login_num || 0);
+                $('#lastLogin').text(admin.login_time ? formatTime(admin.login_time) : '首次登录');
+            }
+        }
+    });
+}
+
+function updateLatestArticles(articles) {
+    const $tbody = $('#latestArticles');
+    
+    if (articles.length === 0) {
+        $tbody.html('<tr><td colspan="5" class="text-center text-muted">暂无文章</td></tr>');
+        return;
+    }
+    
+    let html = '';
+    articles.forEach(function(article) {
+        const statusBadge = article.isshow ? 
+            '<span class="badge bg-success badge-status">已发布</span>' : 
+            '<span class="badge bg-secondary badge-status">未发布</span>';
+            
+        html += `
+            <tr>
+                <td>
+                    <a href="/admin/article/edit/${article.id}" class="text-decoration-none">
+                        ${article.title}
+                    </a>
+                </td>
+                <td>${article.category || '未分类'}</td>
+                <td>${article.hits || 0}</td>
+                <td>${article.addtime ? formatTime(article.addtime) : '-'}</td>
+                <td>${statusBadge}</td>
+            </tr>
+        `;
+    });
+    
+    $tbody.html(html);
+}
+
+function formatUptime(seconds) {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (days > 0) {
+        return `${days}天${hours}小时`;
+    } else if (hours > 0) {
+        return `${hours}小时${minutes}分钟`;
+    } else {
+        return `${minutes}分钟`;
+    }
+}
+
+function formatTime(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) {
+        return '刚刚';
+    } else if (diff < 3600) {
+        return Math.floor(diff / 60) + '分钟前';
+    } else if (diff < 86400) {
+        return Math.floor(diff / 3600) + '小时前';
+    } else if (diff < 604800) {
+        return Math.floor(diff / 86400) + '天前';
+    } else {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0') + ' ' + 
+               String(date.getHours()).padStart(2, '0') + ':' + 
+               String(date.getMinutes()).padStart(2, '0');
+    }
+}
+</script>

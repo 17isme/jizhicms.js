@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录 - 极致CMS</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-logo {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .login-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-floating {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 15px 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .form-check {
+            margin-bottom: 20px;
+        }
+        
+        .form-check-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading .spinner-border {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 10px;
+                padding: 30px 20px;
+            }
+            
+            .login-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h1 class="login-title">极致CMS</h1>
+            <p class="login-subtitle">管理后台登录</p>
+        </div>
+        
+        <div id="alert-container"></div>
+        
+        <form id="loginForm" method="POST" action="/admin/login">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="username" name="username" placeholder="用户名" required>
+                <label for="username"><i class="fas fa-user"></i> 用户名</label>
+            </div>
+            
+            <div class="form-floating">
+                <input type="password" class="form-control" id="password" name="password" placeholder="密码" required>
+                <label for="password"><i class="fas fa-lock"></i> 密码</label>
+            </div>
+            
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                <label class="form-check-label" for="remember">
+                    记住我
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-login">
+                <span class="login-text">立即登录</span>
+                <span class="loading">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    登录中...
+                </span>
+            </button>
+        </form>
+        
+        <div class="forgot-password">
+            <a href="#" onclick="alert('请联系系统管理员重置密码')">忘记密码？</a>
+        </div>
+        
+        <div class="login-footer">
+            <p>&copy; 2024 极致CMS Node.js版本. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 表单提交
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const $form = $(this);
+                const $btn = $form.find('.btn-login');
+                const $loginText = $btn.find('.login-text');
+                const $loading = $btn.find('.loading');
+                
+                // 显示加载状态
+                $btn.prop('disabled', true);
+                $loginText.hide();
+                $loading.show();
+                
+                // 清除之前的错误信息
+                $('#alert-container').empty();
+                
+                // 提交表单
+                $.ajax({
+                    url: $form.attr('action'),
+                    method: 'POST',
+                    data: {
+                        username: $('#username').val(),
+                        password: $('#password').val(),
+                        remember: $('#remember').is(':checked')
+                    },
+                    success: function(response) {
+                        if (response.code === 0) {
+                            showAlert('登录成功，正在跳转...', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/admin';
+                            }, 1000);
+                        } else {
+                            showAlert(response.msg || '登录失败', 'danger');
+                            resetButton();
+                        }
+                    },
+                    error: function(xhr) {
+                        let message = '登录失败，请稍后重试';
+                        if (xhr.responseJSON && xhr.responseJSON.msg) {
+                            message = xhr.responseJSON.msg;
+                        }
+                        showAlert(message, 'danger');
+                        resetButton();
+                    }
+                });
+                
+                function resetButton() {
+                    $btn.prop('disabled', false);
+                    $loginText.show();
+                    $loading.hide();
+                }
+            });
+            
+            // 显示提示信息
+            function showAlert(message, type) {
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                $('#alert-container').html(alertHtml);
+            }
+            
+            // 回车登录
+            $(document).on('keypress', function(e) {
+                if (e.which === 13) {
+                    $('#loginForm').submit();
+                }
+            });
+            
+            // 自动聚焦用户名输入框
+            $('#username').focus();
+        });
+    </script>
+</body>
+</html>

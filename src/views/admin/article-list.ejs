@@ -1,0 +1,254 @@
+<% 
+// 设置页面变量
+const pageTitle = '文章管理';
+const pageIcon = 'fas fa-file-alt';
+const pageDescription = '管理网站文章内容';
+const breadcrumb = [
+    { name: '内容管理', url: '#' },
+    { name: '文章管理', url: '/admin/article/list' }
+];
+%>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="toolbar-left">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control search-input" placeholder="搜索文章标题..." 
+                   value="<%= query.title || '' %>" name="title">
+        </div>
+        
+        <select class="form-select" name="tid" style="width: 150px;">
+            <option value="">所有栏目</option>
+            <% if (typeof classtypes !== 'undefined') { %>
+                <% classtypes.forEach(function(classtype) { %>
+                    <option value="<%= classtype.id %>" <%= query.tid == classtype.id ? 'selected' : '' %>>
+                        <%= classtype.title %>
+                    </option>
+                <% }); %>
+            <% } %>
+        </select>
+        
+        <select class="form-select" name="isshow" style="width: 120px;">
+            <option value="">所有状态</option>
+            <option value="1" <%= query.isshow == '1' ? 'selected' : '' %>>已发布</option>
+            <option value="0" <%= query.isshow == '0' ? 'selected' : '' %>>未发布</option>
+        </select>
+    </div>
+    
+    <div class="toolbar-right">
+        <div class="batch-actions" style="display: none;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="batchDelete('/admin/article/delete')">
+                <i class="fas fa-trash"></i> 删除选中 (<span class="selected-count">0</span>)
+            </button>
+        </div>
+        
+        <a href="/admin/article/add" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 发布文章
+        </a>
+    </div>
+</div>
+
+<!-- 文章列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="50">
+                            <input type="checkbox" class="form-check-input select-all">
+                        </th>
+                        <th>标题</th>
+                        <th width="120">栏目</th>
+                        <th width="100">作者</th>
+                        <th width="80">点击量</th>
+                        <th width="100">发布时间</th>
+                        <th width="80">状态</th>
+                        <th width="150">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (typeof articles !== 'undefined' && articles.length > 0) { %>
+                        <% articles.forEach(function(article) { %>
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="form-check-input select-item" value="<%= article.id %>">
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <% if (article.litpic) { %>
+                                            <img src="<%= article.litpic %>" alt="缩略图" class="me-2" 
+                                                 style="width: 40px; height: 30px; object-fit: cover; border-radius: 4px;">
+                                        <% } %>
+                                        <div>
+                                            <a href="/admin/article/edit/<%= article.id %>" class="text-decoration-none fw-bold">
+                                                <%= article.title %>
+                                            </a>
+                                            <% if (article.jzattr) { %>
+                                                <% article.jzattr.split(',').forEach(function(attr) { %>
+                                                    <span class="badge bg-warning text-dark ms-1"><%= attr %></span>
+                                                <% }); %>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted"><%= article.category || '未分类' %></span>
+                                </td>
+                                <td>
+                                    <span class="text-muted"><%= article.author || '未知' %></span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info"><%= article.hits || 0 %></span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <%= article.addtime ? new Date(article.addtime * 1000).toLocaleDateString() : '-' %>
+                                    </small>
+                                </td>
+                                <td>
+                                    <% if (article.isshow) { %>
+                                        <span class="badge bg-success">已发布</span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary">未发布</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="btn-group-actions">
+                                        <a href="/article/<%= article.id %>.html" target="_blank" 
+                                           class="btn btn-outline-info btn-sm" title="预览">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/admin/article/edit/<%= article.id %>" 
+                                           class="btn btn-outline-primary btn-sm" title="编辑">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                onclick="deleteArticle(<%= article.id %>)" title="删除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="fas fa-file-alt fa-3x mb-3 text-muted"></i>
+                                <div>暂无文章数据</div>
+                                <a href="/admin/article/add" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus"></i> 发布第一篇文章
+                                </a>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页 -->
+        <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item <%= pagination.page <= 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= pagination.page - 1 %>&title=<%= query.title || '' %>&tid=<%= query.tid || '' %>&isshow=<%= query.isshow || '' %>">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                        <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                            <a class="page-link" href="?page=<%= i %>&title=<%= query.title || '' %>&tid=<%= query.tid || '' %>&isshow=<%= query.isshow || '' %>">
+                                <%= i %>
+                            </a>
+                        </li>
+                    <% } %>
+                    
+                    <li class="page-item <%= pagination.page >= pagination.totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= pagination.page + 1 %>&title=<%= query.title || '' %>&tid=<%= query.tid || '' %>&isshow=<%= query.isshow || '' %>">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="text-center text-muted">
+                    共 <%= pagination.total %> 条记录，第 <%= pagination.page %> 页，共 <%= pagination.totalPages %> 页
+                </div>
+            </nav>
+        <% } %>
+    </div>
+</div>
+
+<script>
+// 搜索功能
+$('.search-input').on('input', debounce(function() {
+    const keyword = $(this).val();
+    const url = new URL(window.location);
+    if (keyword) {
+        url.searchParams.set('title', keyword);
+    } else {
+        url.searchParams.delete('title');
+    }
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
+}, 500));
+
+// 筛选功能
+$('select[name="tid"], select[name="isshow"]').on('change', function() {
+    const url = new URL(window.location);
+    const value = $(this).val();
+    const name = $(this).attr('name');
+    
+    if (value) {
+        url.searchParams.set(name, value);
+    } else {
+        url.searchParams.delete(name);
+    }
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
+});
+
+// 删除单个文章
+function deleteArticle(id) {
+    if (!confirm('确定要删除这篇文章吗？')) {
+        return;
+    }
+    
+    admin.showLoading('删除中...');
+    
+    $.ajax({
+        url: '/admin/article/delete',
+        method: 'POST',
+        data: { ids: [id] },
+        success: function(response) {
+            admin.hideLoading();
+            if (response.code === 0) {
+                admin.showSuccess('删除成功');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                admin.showError(response.msg || '删除失败');
+            }
+        },
+        error: function() {
+            admin.hideLoading();
+            admin.showError('删除失败，请稍后重试');
+        }
+    });
+}
+
+// 防抖函数
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>

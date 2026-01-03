@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <meta name="keywords" content="<%= keywords %>">
+    <meta name="description" content="<%= description %>">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Microsoft YaHei', sans-serif; }
+        .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 100px 0; }
+        .article-card { transition: transform 0.3s; }
+        .article-card:hover { transform: translateY(-5px); }
+        .section-title { border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-crown"></i> <%= webConfig.web_name || '极致CMS' %>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">首页</a>
+                    </li>
+                    <% if (typeof navigation !== 'undefined') { %>
+                        <% navigation.forEach(function(nav) { %>
+                            <li class="nav-item <%= nav.children ? 'dropdown' : '' %>">
+                                <% if (nav.children && nav.children.length > 0) { %>
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                        <%= nav.title %>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <% nav.children.forEach(function(child) { %>
+                                            <li><a class="dropdown-item" href="<%= child.url %>"><%= child.title %></a></li>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    <a class="nav-link" href="<%= nav.url %>" target="<%= nav.target %>"><%= nav.title %></a>
+                                <% } %>
+                            </li>
+                        <% }); %>
+                    <% } %>
+                </ul>
+                
+                <!-- 搜索框 -->
+                <form class="d-flex" action="/search" method="GET">
+                    <input class="form-control me-2" type="search" name="q" placeholder="搜索..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main>
+        <!-- 首页横幅 -->
+        <section class="hero-section text-center">
+            <div class="container">
+                <h1 class="display-4 mb-4">欢迎访问 <%= webConfig.web_name || '极致CMS' %></h1>
+                <p class="lead mb-4"><%= webConfig.web_description || '基于Node.js的现代化CMS系统' %></p>
+                <a href="#content" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-down"></i> 浏览内容
+                </a>
+            </div>
+        </section>
+
+        <!-- 内容区域 -->
+        <div class="container py-5" id="content">
+            <div class="row">
+                <!-- 主内容区 -->
+                <div class="col-lg-8">
+                    <!-- 推荐文章 -->
+                    <% if (typeof recommendArticles !== 'undefined' && recommendArticles.length > 0) { %>
+                        <section class="mb-5">
+                            <h2 class="section-title h3">
+                                <i class="fas fa-star text-warning"></i> 推荐文章
+                            </h2>
+                            <div class="row">
+                                <% recommendArticles.slice(0, 3).forEach(function(article) { %>
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card article-card h-100">
+                                            <% if (article.litpic) { %>
+                                                <img src="<%= article.litpic %>" class="card-img-top" alt="<%= article.title %>" style="height: 200px; object-fit: cover;">
+                                            <% } %>
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">
+                                                    <a href="<%= article.url %>" class="text-decoration-none">
+                                                        <%= article.title %>
+                                                    </a>
+                                                </h5>
+                                                <p class="card-text text-muted flex-grow-1">
+                                                    <%= article.description.substring(0, 100) %>...
+                                                </p>
+                                                <div class="mt-auto">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar"></i> <%= article.addtime_format %>
+                                                        <i class="fas fa-eye ms-2"></i> <%= article.hits %>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </section>
+                    <% } %>
+
+                    <!-- 最新文章 -->
+                    <% if (typeof latestArticles !== 'undefined' && latestArticles.length > 0) { %>
+                        <section class="mb-5">
+                            <h2 class="section-title h3">
+                                <i class="fas fa-clock text-primary"></i> 最新文章
+                            </h2>
+                            <div class="row">
+                                <% latestArticles.forEach(function(article) { %>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card article-card h-100">
+                                            <div class="row g-0">
+                                                <% if (article.litpic) { %>
+                                                    <div class="col-4">
+                                                        <img src="<%= article.litpic %>" class="img-fluid rounded-start h-100" alt="<%= article.title %>" style="object-fit: cover;">
+                                                    </div>
+                                                    <div class="col-8">
+                                                <% } else { %>
+                                                    <div class="col-12">
+                                                <% } %>
+                                                    <div class="card-body">
+                                                        <h6 class="card-title">
+                                                            <a href="<%= article.url %>" class="text-decoration-none">
+                                                                <%= article.title %>
+                                                            </a>
+                                                        </h6>
+                                                        <p class="card-text small text-muted">
+                                                            <%= article.description.substring(0, 60) %>...
+                                                        </p>
+                                                        <small class="text-muted">
+                                                            <%= article.addtime_format %>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </section>
+                    <% } %>
+                </div>
+
+                <!-- 侧边栏 -->
+                <div class="col-lg-4">
+                    <!-- 热门文章 -->
+                    <% if (typeof hotArticles !== 'undefined' && hotArticles.length > 0) { %>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-fire text-danger"></i> 热门文章
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <% hotArticles.slice(0, 8).forEach(function(article, index) { %>
+                                    <div class="d-flex mb-3">
+                                        <span class="badge bg-primary me-2 align-self-start"><%= index + 1 %></span>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <a href="<%= article.url %>" class="text-decoration-none">
+                                                    <%= article.title %>
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-eye"></i> <%= article.hits %>
+                                            </small>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <!-- 友情链接 -->
+                    <% if (typeof friendLinks !== 'undefined' && friendLinks.length > 0) { %>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-link text-success"></i> 友情链接
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <% friendLinks.forEach(function(link) { %>
+                                        <div class="col-6 mb-2">
+                                            <a href="<%= link.url %>" target="_blank" class="text-decoration-none small">
+                                                <%= link.title %>
+                                            </a>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><%= webConfig.web_name || '极致CMS' %></h5>
+                    <p class="text-muted"><%= webConfig.web_description || '' %></p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">
+                        © 2024 <%= webConfig.web_name || '极致CMS' %>. 
+                        <% if (webConfig.record) { %>
+                            <a href="https://beian.miit.gov.cn/" target="_blank" class="text-muted"><%= webConfig.record %></a>
+                        <% } %>
+                    </p>
+                    <p class="text-muted">
+                        Powered by <a href="https://github.com/your-repo" target="_blank" class="text-light">极致CMS Node.js版本</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

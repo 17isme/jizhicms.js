@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || '服务器错误' %></title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-container {
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            padding: 40px;
+        }
+        .error-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        .error-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .btn-home {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            margin-right: 15px;
+            transition: all 0.3s;
+        }
+        .btn-home:hover {
+            background: white;
+            color: #dc3545;
+        }
+        .btn-back {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .btn-back:hover {
+            border-color: white;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="error-title"><%= title || '服务器错误' %></div>
+        <div class="error-message">
+            <%= message || '服务器遇到了一个问题，请稍后重试。' %>
+        </div>
+        <div>
+            <a href="/" class="btn-home">
+                <i class="fas fa-home"></i> 返回首页
+            </a>
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fas fa-arrow-left"></i> 返回上页
+            </a>
+        </div>
+    </div>
+</body>
+</html>
