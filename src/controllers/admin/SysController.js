@@ -45,14 +45,33 @@ class SysController {
         }
       });
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          configs,
-          configGroups
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            configs,
+            configGroups
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '系统配置 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/sys-config', {
+            configGroups
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Sys config error:', error);

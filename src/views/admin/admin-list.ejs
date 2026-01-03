@@ -1,0 +1,182 @@
+<%
+// 设置页面变量
+const pageTitle = '管理员管理';
+const pageIcon = 'fas fa-user-shield';
+const pageDescription = '管理后台管理员账号';
+const breadcrumb = [
+    { name: '用户管理', url: '#' },
+    { name: '管理员管理', url: '/admin/admin/list' }
+];
+%>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="toolbar-left">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control search-input" placeholder="搜索用户名/姓名..."
+                   value="<%= query.keyword || '' %>" name="keyword">
+        </div>
+    </div>
+
+    <div class="toolbar-right">
+        <div class="batch-actions" style="display: none;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="batchDelete('/admin/admin/delete')">
+                <i class="fas fa-trash"></i> 删除选中 (<span class="selected-count">0</span>)
+            </button>
+        </div>
+
+        <a href="/admin/admin/add" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 添加管理员
+        </a>
+    </div>
+</div>
+
+<!-- 管理员列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="50">
+                            <input type="checkbox" class="form-check-input select-all">
+                        </th>
+                        <th>用户名</th>
+                        <th>姓名</th>
+                        <th>角色组</th>
+                        <th>手机号</th>
+                        <th>邮箱</th>
+                        <th>登录次数</th>
+                        <th>最后登录</th>
+                        <th>状态</th>
+                        <th width="150">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (typeof admins !== 'undefined' && admins.length > 0) { %>
+                        <% admins.forEach(function(admin) { %>
+                            <tr>
+                                <td>
+                                    <% if (admin.isadmin !== 1) { %>
+                                        <input type="checkbox" class="form-check-input select-item" value="<%= admin.id %>">
+                                    <% } else { %>
+                                        <input type="checkbox" class="form-check-input" disabled>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="fw-bold"><%= admin.username %></span>
+                                    <% if (admin.isadmin === 1) { %>
+                                        <span class="badge bg-danger ms-1">超级管理员</span>
+                                    <% } %>
+                                </td>
+                                <td><%= admin.name || '-' %></td>
+                                <td>
+                                    <span class="badge bg-info text-dark"><%= admin.groupname %></span>
+                                </td>
+                                <td><%= admin.phone || '-' %></td>
+                                <td><%= admin.email || '-' %></td>
+                                <td><%= admin.login_num || 0 %></td>
+                                <td>
+                                    <small class="text-muted">
+                                        <%= admin.login_time ? new Date(admin.login_time * 1000).toLocaleString() : '未登录' %>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">正常</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group-actions">
+                                        <a href="/admin/admin/edit/<%= admin.id %>"
+                                           class="btn btn-outline-primary btn-sm" title="编辑">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <% if (admin.isadmin !== 1) { %>
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                    onclick="deleteAdmin(<%= admin.id %>)" title="删除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-5">
+                                <i class="fas fa-user-shield fa-3x mb-3 text-muted"></i>
+                                <div>暂无管理员数据</div>
+                                <a href="/admin/admin/add" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus"></i> 添加第一个管理员
+                                </a>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item <%= pagination.page <= 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= pagination.page - 1 %>&keyword=<%= query.keyword || '' %>">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                        <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                            <a class="page-link" href="?page=<%= i %>&keyword=<%= query.keyword || '' %>">
+                                <%= i %>
+                            </a>
+                        </li>
+                    <% } %>
+
+                    <li class="page-item <%= pagination.page >= pagination.totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= pagination.page + 1 %>&keyword=<%= query.keyword || '' %>">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="text-center text-muted">
+                    共 <%= pagination.total %> 条记录，第 <%= pagination.page %> 页，共 <%= pagination.totalPages %> 页
+                </div>
+            </nav>
+        <% } %>
+    </div>
+</div>
+
+<script>
+// 删除单个管理员
+function deleteAdmin(id) {
+    if (!confirm('确定要删除这个管理员吗？')) {
+        return;
+    }
+
+    admin.showLoading('删除中...');
+
+    $.ajax({
+        url: '/admin/admin/delete',
+        method: 'POST',
+        data: { ids: [id] },
+        success: function(response) {
+            admin.hideLoading();
+            if (response.code === 0) {
+                admin.showSuccess('删除成功');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                admin.showError(response.msg || '删除失败');
+            }
+        },
+        error: function() {
+            admin.hideLoading();
+            admin.showError('删除失败，请稍后重试');
+        }
+    });
+}
+</script>

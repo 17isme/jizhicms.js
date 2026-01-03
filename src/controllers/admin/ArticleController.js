@@ -71,7 +71,6 @@ class ArticleController {
 
       const pagination = getPagination(page, pageSize, count);
 
-      // 如果是API请求，返回JSON数据
       if (req.headers.accept && req.headers.accept.includes('application/json')) {
         return res.json(JsonReturn({
           code: 0,
@@ -83,7 +82,6 @@ class ArticleController {
         }));
       }
 
-      // 渲染页面
       res.render('layouts/admin', {
         title: '文章管理 - 极致CMS管理后台',
         user: req.admin,
@@ -127,13 +125,32 @@ class ArticleController {
         order: [['orders', 'ASC'], ['id', 'ASC']]
       });
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          classtypes
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            classtypes
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '发布文章 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/article-add', {
+            classtypes
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
     } catch (error) {
       console.error('Article add error:', error);
       res.json(JsonReturn({
@@ -222,14 +239,34 @@ class ArticleController {
         order: [['orders', 'ASC'], ['id', 'ASC']]
       });
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          article,
-          classtypes
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            article,
+            classtypes
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '编辑文章 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/article-edit', {
+            article,
+            classtypes
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Article edit error:', error);

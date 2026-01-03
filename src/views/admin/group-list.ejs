@@ -1,0 +1,150 @@
+<%
+// 设置页面变量
+const pageTitle = '角色组管理';
+const pageIcon = 'fas fa-users-cog';
+const pageDescription = '管理后台管理员角色权限组';
+const breadcrumb = [
+    { name: '用户管理', url: '#' },
+    { name: '角色组管理', url: '/admin/admin/group' }
+];
+%>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 角色组列表 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>角色组名称</th>
+                                <th>添加时间</th>
+                                <th width="100">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (typeof groups !== 'undefined' && groups.length > 0) { %>
+                                <% groups.forEach(function(group) { %>
+                                    <tr>
+                                        <td><%= group.id %></td>
+                                        <td>
+                                            <span class="fw-bold"><%= group.name %></span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                <%= group.addtime ? new Date(group.addtime * 1000).toLocaleDateString() : '-' %>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                    onclick="deleteGroup(<%= group.id %>)" title="删除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        暂无角色组数据
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item <%= pagination.page <= 1 ? 'disabled' : '' %>">
+                                <a class="page-link" href="?page=<%= pagination.page - 1 %>">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                                <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>">
+                                        <%= i %>
+                                    </a>
+                                </li>
+                            <% } %>
+
+                            <li class="page-item <%= pagination.page >= pagination.totalPages ? 'disabled' : '' %>">
+                                <a class="page-link" href="?page=<%= pagination.page + 1 %>">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 添加角色组 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">添加角色组</h5>
+            </div>
+            <div class="card-body">
+                <form action="/admin/admin/group/save" method="POST" data-ajax="true" data-validate="true">
+                    <div class="mb-3">
+                        <label class="form-label">角色组名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" required placeholder="例如：编辑人员">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">权限配置</label>
+                        <div class="alert alert-info small">
+                            权限配置功能将在后续版本中完善，目前创建的角色组拥有基本后台访问权限。
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加角色组
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 删除角色组
+function deleteGroup(id) {
+    if (!confirm('确定要删除这个角色组吗？')) {
+        return;
+    }
+
+    admin.showLoading('删除中...');
+
+    $.ajax({
+        url: '/admin/admin/group/delete',
+        method: 'POST',
+        data: { id: id },
+        success: function(response) {
+            admin.hideLoading();
+            if (response.code === 0) {
+                admin.showSuccess('删除成功');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                admin.showError(response.msg || '删除失败');
+            }
+        },
+        error: function() {
+            admin.hideLoading();
+            admin.showError('删除失败，请稍后重试');
+        }
+    });
+}
+</script>

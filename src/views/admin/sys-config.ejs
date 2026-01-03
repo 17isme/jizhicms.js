@@ -1,0 +1,219 @@
+<%
+// 设置页面变量
+const pageTitle = '系统配置';
+const pageIcon = 'fas fa-cogs';
+const pageDescription = '管理网站系统参数';
+const breadcrumb = [
+    { name: '系统管理', url: '#' },
+    { name: '系统配置', url: '/admin/sys/config' }
+];
+%>
+
+<div class="row">
+    <div class="col-lg-3">
+        <!-- 配置导航 -->
+        <div class="card mb-4">
+            <div class="list-group list-group-flush" id="config-tabs" role="tablist">
+                <a class="list-group-item list-group-item-action active" data-bs-toggle="list" href="#basic" role="tab">
+                    <i class="fas fa-home me-2"></i> 基础配置
+                </a>
+                <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#seo" role="tab">
+                    <i class="fas fa-search me-2"></i> SEO配置
+                </a>
+                <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#upload" role="tab">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> 上传配置
+                </a>
+                <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#site" role="tab">
+                    <i class="fas fa-globe me-2"></i> 站点信息
+                </a>
+                <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#other" role="tab">
+                    <i class="fas fa-ellipsis-h me-2"></i> 其他配置
+                </a>
+            </div>
+        </div>
+
+        <!-- 缓存管理 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">缓存管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-warning" onclick="clearCache('config')">
+                        <i class="fas fa-sync"></i> 更新配置缓存
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" onclick="clearCache('all')">
+                        <i class="fas fa-trash"></i> 清除所有缓存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-body">
+                <form action="/admin/sys/config/save" method="POST" data-ajax="true" data-validate="true">
+                    <div class="tab-content">
+                        <!-- 基础配置 -->
+                        <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                            <h5 class="card-title mb-4">基础配置</h5>
+                            <% if (typeof configGroups.basic !== 'undefined') { %>
+                                <% configGroups.basic.forEach(function(config) { %>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-3 col-form-label"><%= config.title %></label>
+                                        <div class="col-sm-9">
+                                            <% if (config.type === 2) { // 图片上传 %>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" name="<%= config.field %>" id="<%= config.field %>" value="<%= config.data %>">
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="$('#file-<%= config.field %>').click()">上传</button>
+                                                </div>
+                                                <input type="file" id="file-<%= config.field %>" class="d-none" onchange="uploadFile(this.files[0], (res) => $('#<%= config.field %>').val(res.url))">
+                                                <% if (config.data) { %>
+                                                    <div class="mt-2">
+                                                        <img src="<%= config.data %>" alt="预览" style="height: 40px;">
+                                                    </div>
+                                                <% } %>
+                                            <% } else { %>
+                                                <input type="text" class="form-control" name="<%= config.field %>" value="<%= config.data %>">
+                                            <% } %>
+                                            <% if (config.tip) { %>
+                                                <div class="form-text"><%= config.tip %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+
+                        <!-- SEO配置 -->
+                        <div class="tab-pane fade" id="seo" role="tabpanel">
+                            <h5 class="card-title mb-4">SEO配置</h5>
+                            <% if (typeof configGroups.seo !== 'undefined') { %>
+                                <% configGroups.seo.forEach(function(config) { %>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-3 col-form-label"><%= config.title %></label>
+                                        <div class="col-sm-9">
+                                            <% if (config.type === 1) { // 文本域 %>
+                                                <textarea class="form-control" name="<%= config.field %>" rows="3"><%= config.data %></textarea>
+                                            <% } else { %>
+                                                <input type="text" class="form-control" name="<%= config.field %>" value="<%= config.data %>">
+                                            <% } %>
+                                            <% if (config.tip) { %>
+                                                <div class="form-text"><%= config.tip %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+
+                        <!-- 上传配置 -->
+                        <div class="tab-pane fade" id="upload" role="tabpanel">
+                            <h5 class="card-title mb-4">上传配置</h5>
+                            <% if (typeof configGroups.upload !== 'undefined') { %>
+                                <% configGroups.upload.forEach(function(config) { %>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-3 col-form-label"><%= config.title %></label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" name="<%= config.field %>" value="<%= config.data %>">
+                                            <% if (config.tip) { %>
+                                                <div class="form-text"><%= config.tip %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+
+                        <!-- 站点信息 -->
+                        <div class="tab-pane fade" id="site" role="tabpanel">
+                            <h5 class="card-title mb-4">站点信息</h5>
+                            <% if (typeof configGroups.site !== 'undefined') { %>
+                                <% configGroups.site.forEach(function(config) { %>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-3 col-form-label"><%= config.title %></label>
+                                        <div class="col-sm-9">
+                                            <% if (config.type === 1) { // 文本域 %>
+                                                <textarea class="form-control" name="<%= config.field %>" rows="3"><%= config.data %></textarea>
+                                            <% } else { %>
+                                                <input type="text" class="form-control" name="<%= config.field %>" value="<%= config.data %>">
+                                            <% } %>
+                                            <% if (config.tip) { %>
+                                                <div class="form-text"><%= config.tip %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+
+                        <!-- 其他配置 -->
+                        <div class="tab-pane fade" id="other" role="tabpanel">
+                            <h5 class="card-title mb-4">其他配置</h5>
+                            <% if (typeof configGroups.other !== 'undefined') { %>
+                                <% configGroups.other.forEach(function(config) { %>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-3 col-form-label"><%= config.title %></label>
+                                        <div class="col-sm-9">
+                                            <% if (config.type === 3) { // 开关 %>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" name="<%= config.field %>" value="1" <%= config.data == 1 ? 'checked' : '' %>>
+                                                    <label class="form-check-label">开启</label>
+                                                </div>
+                                            <% } else if (config.type === 1) { // 文本域 %>
+                                                <textarea class="form-control" name="<%= config.field %>" rows="3"><%= config.data %></textarea>
+                                            <% } else { %>
+                                                <input type="text" class="form-control" name="<%= config.field %>" value="<%= config.data %>">
+                                            <% } %>
+                                            <% if (config.tip) { %>
+                                                <div class="form-text"><%= config.tip %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+
+                            <% if (typeof configGroups.other === 'undefined' || configGroups.other.length === 0) { %>
+                                <div class="alert alert-info">暂无其他配置项</div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-sm-9 offset-sm-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> 保存配置
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 清除缓存
+function clearCache(type) {
+    admin.showLoading('清理中...');
+
+    $.ajax({
+        url: '/admin/sys/cache/clear',
+        method: 'GET',
+        data: { type: type },
+        success: function(response) {
+            admin.hideLoading();
+            if (response.code === 0) {
+                admin.showSuccess('缓存清理成功');
+            } else {
+                admin.showError(response.msg || '清理失败');
+            }
+        },
+        error: function() {
+            admin.hideLoading();
+            admin.showError('操作失败，请稍后重试');
+        }
+    });
+}
+</script>

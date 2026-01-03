@@ -1,0 +1,162 @@
+<%
+// 设置页面变量
+const pageTitle = '编辑栏目';
+const pageIcon = 'fas fa-edit';
+const pageDescription = '编辑栏目分类信息';
+const breadcrumb = [
+    { name: '内容管理', url: '#' },
+    { name: '栏目管理', url: '/admin/classtype/list' },
+    { name: '编辑栏目', url: '#' }
+];
+%>
+
+<form action="/admin/classtype/update/<%= classtype.id %>" method="POST" data-ajax="true" data-validate="true">
+    <div class="row">
+        <!-- 左侧主要信息 -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">栏目名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="title" required value="<%= classtype.title %>" placeholder="请输入栏目名称">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">上级栏目</label>
+                        <select class="form-select" name="pid">
+                            <option value="0">顶级栏目</option>
+                            <% if (typeof parentClasstypes !== 'undefined') { %>
+                                <% parentClasstypes.forEach(function(item) { %>
+                                    <option value="<%= item.id %>" <%= classtype.pid == item.id ? 'selected' : '' %>>
+                                        <%
+                                        let level = 0;
+                                        if (item.pid > 0) level = 1;
+                                        %>
+                                        <%= '　'.repeat(level) + (level > 0 ? '├─ ' : '') + item.title %>
+                                    </option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">栏目标识</label>
+                        <input type="text" class="form-control" name="biaoshi" value="<%= classtype.biaoshi %>" placeholder="英文标识，用于伪静态等">
+                        <div class="form-text">只能包含字母、数字和下划线，留空则自动生成</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">缩略图</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="litpic" id="litpic" value="<%= classtype.litpic %>" placeholder="图片地址">
+                            <button class="btn btn-outline-secondary" type="button" onclick="$('#file-litpic').click()">上传</button>
+                        </div>
+                        <input type="file" id="file-litpic" class="d-none" onchange="uploadFile(this.files[0], (res) => $('#litpic').val(res.url))">
+                        <% if (classtype.litpic) { %>
+                            <div class="mt-2">
+                                <img src="<%= classtype.litpic %>" alt="预览" style="height: 60px; border-radius: 4px;">
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">SEO关键词</label>
+                        <input type="text" class="form-control" name="keywords" value="<%= classtype.keywords %>" placeholder="多个关键词用逗号分隔">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">SEO描述</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="栏目描述信息"><%= classtype.description %></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">栏目内容</label>
+                        <textarea class="form-control" name="body" rows="10" id="editor"><%= classtype.body %></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧属性设置 -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">属性设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">所属模型</label>
+                        <select class="form-select" name="molds">
+                            <option value="article" <%= classtype.molds === 'article' ? 'selected' : '' %>>文章模型</option>
+                            <option value="product" <%= classtype.molds === 'product' ? 'selected' : '' %>>商品模型</option>
+                            <option value="message" <%= classtype.molds === 'message' ? 'selected' : '' %>>留言模型</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">排序</label>
+                        <input type="number" class="form-control" name="orders" value="<%= classtype.orders %>">
+                        <div class="form-text">数字越小越靠前</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">每页显示数量</label>
+                        <input type="number" class="form-control" name="pagesize" value="<%= classtype.pagesize %>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">显示状态</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isshow" name="isshow" value="1" <%= classtype.isshow ? 'checked' : '' %>>
+                            <label class="form-check-label" for="isshow">显示</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">新窗口打开</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="target" name="target" value="1" <%= classtype.target ? 'checked' : '' %>>
+                            <label class="form-check-label" for="target">是</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">模板设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">列表页模板</label>
+                        <input type="text" class="form-control" name="template_list" value="<%= classtype.template_list %>" placeholder="list_article.html">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">详情页模板</label>
+                        <input type="text" class="form-control" name="template_show" value="<%= classtype.template_show %>" placeholder="show_article.html">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> 保存修改
+                </button>
+                <a href="/admin/classtype/list" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- 引入编辑器或其他脚本 -->
+<script>
+$(document).ready(function() {
+    // 这里可以初始化富文本编辑器
+});
+</script>
