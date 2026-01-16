@@ -56,14 +56,35 @@ class AdminController {
 
       const pagination = getPagination(page, pageSize, count);
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          list,
-          pagination
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            list,
+            pagination
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '管理员管理 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/admin-list', {
+            admins: list,
+            pagination,
+            query: req.query
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Admin list error:', error);
@@ -83,13 +104,32 @@ class AdminController {
         order: [['id', 'ASC']]
       });
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          groups
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            groups
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '添加管理员 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/admin-add', {
+            groups
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
     } catch (error) {
       console.error('Admin add error:', error);
       res.json(JsonReturn({
@@ -190,23 +230,45 @@ class AdminController {
         purviews = admin.purviews ? admin.purviews.split(',') : [];
       }
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          admin: {
-            id: admin.id,
-            username: admin.username,
-            name: admin.name,
-            gid: admin.gid,
-            phone: admin.phone,
-            email: admin.email,
-            isadmin: admin.isadmin,
-            purviews
-          },
-          groups
-        }
-      }));
+      const adminData = {
+        id: admin.id,
+        username: admin.username,
+        name: admin.name,
+        gid: admin.gid,
+        phone: admin.phone,
+        email: admin.email,
+        isadmin: admin.isadmin,
+        purviews
+      };
+
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            admin: adminData,
+            groups
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '编辑管理员 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/admin-edit', {
+            admin: adminData,
+            groups
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Admin edit error:', error);
@@ -355,14 +417,34 @@ class AdminController {
 
       const pagination = getPagination(page, pageSize, count);
 
-      res.json(JsonReturn({
-        code: 0,
-        msg: 'success',
-        data: {
-          list: rows,
-          pagination
-        }
-      }));
+      if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json(JsonReturn({
+          code: 0,
+          msg: 'success',
+          data: {
+            list: rows,
+            pagination
+          }
+        }));
+      }
+
+      res.render('layouts/admin', {
+        title: '角色组管理 - 极致CMS管理后台',
+        user: req.admin,
+        body: await new Promise((resolve) => {
+          res.render('admin/group-list', {
+            groups: rows,
+            pagination
+          }, (err, html) => {
+            if (err) {
+              console.error('Render error:', err);
+              resolve('<div class="alert alert-danger">页面渲染失败</div>');
+            } else {
+              resolve(html);
+            }
+          });
+        })
+      });
 
     } catch (error) {
       console.error('Group list error:', error);
